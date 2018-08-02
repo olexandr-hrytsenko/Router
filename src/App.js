@@ -1,36 +1,73 @@
+
 import React, { Component } from 'react';
-import axios from "axios";
 import './App.css';
+import { BrowserRouter as Router, Route, NavLink, Redirect} from 'react-router-dom';
 
 
-import UserForm from "./components/UserForm";
+const User = (params) => {
+  return ( 
+  <div>
+    <h1> Welcome User: {params.username} </h1>
+    <h2> PROTECTED </h2>
+  </div>
+  );
+}
 
 class App extends Component {
   state = {
-    repos: null
+    loggedIn:false
   }
-  getUser = (e) => {
-    e.preventDefault();
-    const user = e.target.elements.username.value;
-    if (user) {
-      axios.get(`https://api.github.com/users/${user}`)
-      .then((res) => {
-        const repos = res.data.public_repos;
-        this.setState({ repos });
-      })
-    } else return;
+  loginHandle = () => {
+    this.setState(prevState => ({
+     loggedIn: !prevState.loggedIn  
+    }))
   }
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <h1 className="App-title">HTTP Calls in React</h1>
-        </header>
-        <UserForm getUser={this.getUser} />
-        { this.state.repos ? <p>Number of repos: { this.state.repos }</p> : <p>Please enter a username.</p> }
-      </div>
+      <Router>
+        <div className="App">
+        
+          <p>
+            <NavLink to="/" exact activeStyle={
+              { color:'red' }
+            }>Home</NavLink>
+          </p>
+          <p>
+            <NavLink to="/about" exact activeStyle={
+              { color:'orange' }
+            }>About</NavLink>
+          </p>
+          <p>
+            <NavLink to="/user/john" exact activeStyle={
+              { color:'green' }
+            }>User John</NavLink>
+          </p>
+          <p>
+            <NavLink to="/user/peter" exact activeStyle={
+              { color:'green' }
+            }>User Peter</NavLink>
+          </p>
+
+
+        <input type="button" value={this.state.loggedIn ? 'log out': 'log in'} onClick={this.loginHandle}/>
+
+        <Route path="/" exact strict render={
+          () => {
+            return ( <h1>Welcome Home</h1>);
+          }
+        }/>
+        <Route path="/about" exact strict render={
+          () => {
+            return ( <h1>Welcome About</h1>);
+          }
+        }/>
+        <Route path="/user/:username" exact strict render={({match})=>(
+          this.state.loggedIn ? ( <User username={match.params.username}/>) : (<Redirect to='/' />)
+        )}/>
+        </div>
+      </Router>
     );
   }
-};
+}
 
 export default App;
